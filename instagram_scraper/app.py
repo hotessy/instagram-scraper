@@ -574,7 +574,7 @@ class InstagramScraper(object):
 					nodes.extend(self._get_nodes(top_posts))
 
 				posts = payload['edge_' + entity_name + '_to_media']
-
+				self.logger.info(f"{posts['count']} posts available for {self.username}")
 				nodes.extend(self._get_nodes(posts))
 				end_cursor = posts['page_info']['end_cursor']
 				return nodes, end_cursor
@@ -620,18 +620,16 @@ class InstagramScraper(object):
 		return node
 
 	def build_pagination_index(self):
-		store = {}
 		data_gen = self.query_hashtag_gen(self.username[0])
 		i = 0
 		pbar = tqdm.tqdm(total=self.maximum, unit='post')
 		for data in data_gen:
-			store.update(data)
 			self.save_json(data, f"./index/{self.username[0]}.json")
-			i += len(list(data.values())[0])
-			pbar.update(i)
+			count = len(list(data.values())[0])
+			i += count
+			pbar.update(count)
 			if i >= self.maximum:
-				break
-		return store
+				return
 
 	def __get_media_details(self, shortcode):
 		resp = self.get_json(VIEW_MEDIA_URL.format(shortcode))
@@ -1653,8 +1651,8 @@ def main():
 
 	if args.save_pagination_index:
 		assert scraper.tag, "Only allowed for hashtags"
-		scraper.build_pagination_index()
-		return
+		scraper.logger.info("Fetching only timestamps")
+		return scraper.build_pagination_index()
 
 	if args.tag:
 		scraper.scrape_hashtag()
