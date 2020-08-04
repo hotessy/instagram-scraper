@@ -10,3 +10,8 @@ insta_args.txt
 .idea
 README.rst
 *.sh
+*.json
+*jsonl
+data/
+nbs/
+index/
